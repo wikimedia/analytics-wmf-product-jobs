@@ -184,6 +184,10 @@
                     <name>parent_error_message</name>
                     <value>${wf:errorMessage(wf:lastErrorNode())}</value>
                 </property>
+                <property>
+                    <name>to</name>
+                    <value>${alert_email}</value>
+                </property>
             </configuration>
         </sub-workflow>
         <ok to="kill"/>

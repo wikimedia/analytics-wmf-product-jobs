@@ -1,0 +1,111 @@
+#!/usr/bin/bash
+
+# Exit immediately if any command fails
+set -o pipefail
+set -e
+
+raise() {
+    printf "ERROR: $*\n" >> /dev/stderr
+    exit 1
+}
+
+# Function to remove junk from output of the hdfs command
+filter_logspam() {
+    sed '/Dfile\.encoding=UTF-8\|INFO fs\.TrashPolicyDefault/d'
+}
+
+# Parse and check arguments
+while [[ $# -gt 0 ]]; do
+    if [[ ($1 == "--production" || $1 == "--test") && -z $mode_found ]]; then
+        mode=${1#--}
+        mode_found=1
+    elif [[ -z $job_name_found ]]; then
+        job_name=$1
+        job_name_found=1
+    else
+        raise "\"$1\" is not a valid argument."
+    fi
+    shift
+done
+
+local_job_dir="${0%/*}/$job_name"
+if [[ -z $job_name ]]; then
+    raise "You must provide a job name."
+elif [[ ! -d $local_job_dir ]]; then
+    raise "Could not find a job named $job_name."
+fi
+
+# Get the right configuration
+test_config="$local_job_dir/test.properties"
+production_config="$local_job_dir/production.properties"
+
+if [[ $mode == "test" ]]; then
+    # mktemp replaces the XXXXXX with a random string
+    config=$(mktemp -t deploy-oozie-job-XXXXXX.properties)
+    # Combine the test and production configs, with test taking precendence
+    # From https://stackoverflow.com/questions/14017577/
+    awk -F= '!a[$1]++' $test_config $production_config > "$config"
+elif [[ $mode == "production" ]]; then
+    config=$production_config
+else
+    raise "The mode must be either \"--test\" or \"--production\"."
+fi
+
+# Read the HDFS user name from the config file
+hdfs_user_name=$(grep "^\s*user\s*=" $config | awk '{print $3}')
+hdfs_job_dir="hdfs:///user/$hdfs_user_name/jobs/$job_name"
+printf "The HDFS job directory will be $hdfs_job_dir\n"
+
+# Remove any old job files
+if [[ $hdfs_user_name == "analytics-product" ]]; then
+    sudo -u analytics-product kerberos-run-command analytics-product hdfs dfs -ls $hdfs_job_dir \
+        &>/dev/null
+    dfs_ls_exit_status=$?
+    if [[ $dfs_ls_exit_status -eq 0 ]]; then
+        printf "Removing old job files in the job directory...\n"
+        sudo -u analytics-product kerberos-run-command analytics-product hdfs dfs -rm -r \
+            $hdfs_job_dir |& filter_logspam
+    fi
+else
+    if hdfs dfs -ls $hdfs_job_dir &>/dev/null; then
+        printf "Removing old job files in the job directory...\n"
+        hdfs dfs -rm -r $hdfs_job_dir |& filter_logspam
+    fi
+fi
+
+# Make the destination folder
+printf "Creating the job directory...\n"
+if [[ $hdfs_user_name == "analytics-product" ]]; then
+    sudo -u analytics-product kerberos-run-command analytics-product hdfs dfs -D \
+        fs.permissions.umask-mode=022 -mkdir -p $hdfs_job_dir |& filter_logspam
+else
+    hdfs dfs -D fs.permissions.umask-mode=022 -mkdir -p $hdfs_job_dir |& filter_logspam
+fi
+
+# Put the new folders for this job only into HDFS. Importantly, this does not 
+# touch the files for other jobs, which can have unpleasant side-effects if
+# they are running.
+printf "Putting new job files into the job directory...\n"
+if [[ $hdfs_user_name == "analytics-product" ]]; then
+    sudo -u analytics-product kerberos-run-command analytics-product hdfs dfs -D \
+        fs.permissions.umask-mode=022 -put $local_job_dir/* $hdfs_job_dir |& filter_logspam
+else
+    hdfs dfs -D fs.permissions.umask-mode=022 -put $local_job_dir/* $hdfs_job_dir \
+        |& filter_logspam
+fi
+
+# Now, the part where we SUBMIT the job!
+printf "Submitting the job...\n"
+latest_refinery_directory=hdfs://$( \
+    hdfs dfs -ls -d /wmf/refinery/$(date +%Y)* 2>/dev/null \
+    | tail -n 1 \
+    | awk '{print $NF}' \
+)
+if [[ $hdfs_user_name == "analytics-product" ]]; then
+    sudo -u analytics-product kerberos-run-command analytics-product oozie job -run \
+    -config $config -Drefinery_directory=$latest_refinery_directory \
+    -oozie http://an-coord1001.eqiad.wmnet:11000/oozie |& filter_logspam
+else
+    oozie job -run -config $config -Drefinery_directory=$latest_refinery_directory \
+    -oozie http://an-coord1001.eqiad.wmnet:11000/oozie |& filter_logspam
+fi
