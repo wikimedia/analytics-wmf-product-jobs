@@ -1,16 +1,28 @@
 # Introduction
-This repo stores different recurring jobs  [Product Analytics](https://www.mediawiki.org/wiki/Product_Analytics) team's [Oozie](Analytics/Systems/Cluster/Oozie) workflows and scripts/queries/jobs.
+This repo stores different recurring jobs owned by the [Product Analytics](https://www.mediawiki.org/wiki/Product_Analytics) team.
 
 # Deployment
 ## Oozie jobs
-In order to deploy an Oozie job, you should follow the following procedure:
-1. If you're deploying a new version of an existing Oozie job, you should first kill the existing job using the `oozie` command line client or the [Hue web interface](hue.wikimedia.org).
-1. Write two different coordinator files, one for production (`production.properties`) and one with testing overrides (`test.properties`). Test jobs should be run under your own user, use your own HDFS/Hive database, and send alerts to your own email address. Production jobs should be run as `analytics_product`, use the `wmf_product` HDFS/Hive databse, and send alerts to `product-analytics+alerts@wikimedia.org`. Note that any properties not found in `test.properties` will be picked up from `production.properties`, so `test.properties` only needs to contain the properties you want to override during testing.
-1. Sync the version of the jobs repo you want to use to an [analytics client host](https://wikitech.wikimedia.org/wiki/Analytics/Systems/Clients). If your changes are already in the master branch, you could clone the repo onto the machine. If you are developing on your local machine, you can use a command like `rsync --archive --delete jobs stat1004.eqiad.wmnet:~/analytics_wmf_product_jobs`.
-1. On the analytics client, use the script included in this repo to put your job files into [the Data Lake](https://wikitech.wikimedia.org/wiki/Analytics/Data_Lake) and then submit it to Oozie. The script is used as follows: `./deploy-oozie-job --config={{path to config}} {{job name}}`. The job name determines the folder where the script looks for your job files. The `user` property in your config file determines which user the job is run under.
-1. You can then track the submitted job using the `oozie` command line client or the [Hue web interface](hue.wikimedia.org).
+In order to deploy an [Oozie](https://wikitech.wikimedia.org/wiki/Analytics/Systems/Cluster/Oozie) job, follow these steps:
+1. If you're deploying a new version of an existing job, kill the existing job first (easiest with the [Hue web interface](https://hue.wikimedia.org)).
+1. Make sure you have a production config file (`production.properties`) that refects the final job you want to run. Particularly:
+    * Use the `analytics_product` user account
+    * Use the `wmf_product` Hive database
+    * Use `product-analytics+alerts@wikimedia.org` for alerts.
+    * Set the right start time. What is the earliest time period you want to produce data for?
+    * Set the right the end time. Normally, we want jobs to run indefinitely, so we use `3000-01-01T00:00Z`.
+1. Make sure you have a test config file (`test.properties`) that overrides the production properties where necessary for appropriate testing. Particularly: 
+    * Use your own user account
+    * Use your own Hive database
+    * Use your own email for alerts
+    * Set the start and end time close together, so the test job only runs on a small sample of data. An hour or a day should be plenty.
+1. Upload the version of this repo with your changes to an [analytics client host](https://wikitech.wikimedia.org/wiki/Analytics/Systems/Clients). If you are developing on your local machine, you can use a command like `rsync --archive --delete jobs stat1004.eqiad.wmnet:~/analytics_wmf_product_jobs`.
+1. On the analytics client, deploy and run your job in test mode using script from this repo: `./deploy-oozie-job {{job name}} --test`.
+1. Check that the job succeeds and produces the right output. If it doesn't, change the code as necessary, reupload, and retest.
+1. Once your job runs perfectly in test mode, deploy and run it in production mode: `./deploy-oozie-job {{job name}} --production`.
+1. Monitor the production job to make sure it's running successfully and check the output to ensure that it's correct.
+1. If everything is good, post a celebratory meme to the team chat channel! 
 
 # See also
-
 - [analytics/wmf-product](https://gerrit.wikimedia.org/g/analytics/wmf-product) for more of Product Analytics repositories
 - [analytics/refinery](https://gerrit.wikimedia.org/g/analytics/refinery) for Analytics Engineering's software infrastructure used on the analytics cluster
