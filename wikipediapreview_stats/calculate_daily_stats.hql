@@ -20,14 +20,14 @@
 --
 --
 -- Usage:
---     hive -f calculate_daily_stats.hql
---         -d source_table=wmf.webrequest
---         -d archive_table=wmf_product.wikipediapreview_stats
---         -d archive_directory=/user/wmf_product/wikipediapreview_stats/daily
---         -d temporary_directory=/tmp/analytics-product_wikipediapreview_stats
---         -d year=2020
---         -d month=10
---         -d day=20
+--     hive -f calculate_daily_stats.hql \
+--         -d source_table=wmf.webrequest \
+--         -d archive_table=wmf_product.wikipediapreview_stats \
+--         -d archive_directory=/user/wmf_product/wikipediapreview_stats/daily \
+--         -d temporary_directory=/tmp/analytics-product_wikipediapreview_stats \
+--         -d year=2021 \
+--         -d month=2 \
+--         -d day=18
 --
 
 -- Set compression codec to gzip to provide asked format
@@ -50,6 +50,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS ${archive_table} (
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
 LOCATION '${archive_directory}'
 ;
 
@@ -71,6 +72,7 @@ CREATE EXTERNAL TABLE tmp_wikipediapreview_stats_${year}_${month}_${day} (
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
 LOCATION '${temporary_directory}'
 ;
 
