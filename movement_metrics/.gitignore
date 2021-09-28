@@ -1,0 +1,4 @@
+.ipynb_checkpoints/
+
+# Auto-created by running nbconvert --to notebook
+*.nbconvert.ipynb
