@@ -1,8 +1,10 @@
 #!/bin/bash
 
-NB_DIR="/srv/product_analytics/jobs/movement_metrics/notebooks"
+notebooks_dir="/srv/product_analytics/jobs/movement_metrics/notebooks"
 
-alias execute_notebook="/usr/lib/anaconda-wmf/bin/python -m jupyter nbconvert --ExecutePreprocessor.timeout=None --to notebook --execute"
+source /usr/lib/anaconda-wmf/bin/activate
 
-# Execute the following notebooks:
-execute_notebook $NB_DIR/test.ipynb
+for notebook in $notebooks_dir/*.ipynb
+do
+  python -m jupyter nbconvert --ExecutePreprocessor.timeout=None --to notebook --execute $notebook
+done
