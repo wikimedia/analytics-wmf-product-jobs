@@ -6,5 +6,5 @@ source /usr/lib/anaconda-wmf/bin/activate
 
 for notebook in $notebooks_dir/*.ipynb
 do
-  python -m jupyter nbconvert --ExecutePreprocessor.timeout=None --to notebook --execute $notebook
+  python -m jupyter nbconvert --ExecutePreprocessor.timeout=None --to notebook --execute $notebook || exit 1
 done
