@@ -84,20 +84,31 @@ WITH wikipediapreview_stats_${year}_${month}_${day} AS
         year,
         month,
         day,
-        access_method,
+        IF(
+            x_analytics_map["wprov"] = 'wppw1t',
+            'mobile web',
+            access_method
+        ) AS access_method,
         parse_url(referer, 'HOST') AS referer_host,
         geocoded_data['continent'] AS continent,
         geocoded_data['country_code'] AS country_code,
         geocoded_data['country'] AS country
     FROM ${source_table}
-    WHERE uri_query LIKE '%wprov=wppw1%'
+    WHERE
+        x_analytics_map["wprov"] IN ('wppw1', 'wppw1t')
         AND webrequest_source = 'text'
-        AND year=${year}
-        AND month=${month}
-        AND day=${day}
+        AND year = ${year}
+        AND month = ${month}
+        AND day = ${day}
     GROUP BY
-        year, month, day,
-        access_method,
+        year,
+        month,
+        day,
+        IF(
+            x_analytics_map["wprov"] = 'wppw1t',
+            'mobile web',
+            access_method
+        ),
         parse_url(referer, 'HOST'),
         geocoded_data['continent'],
         geocoded_data['country_code'],

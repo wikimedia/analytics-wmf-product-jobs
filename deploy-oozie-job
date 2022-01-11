@@ -97,7 +97,8 @@ fi
 # Now, the part where we SUBMIT the job!
 printf "Submitting the job...\n"
 latest_refinery_directory=hdfs://$( \
-    hdfs dfs -ls -d /wmf/refinery/$(date +%Y)* 2>/dev/null \
+    # This will stop working in 2100, but I think that's okay.
+    hdfs dfs -ls -d /wmf/refinery/20* 2>/dev/null \
     | tail -n 1 \
     | awk '{print $NF}' \
 )
