@@ -1,6 +1,8 @@
 # Movement Metrics
 
-Once a month all notebooks in the "notebooks" sub-directory are executed using [Anaconda base environment](https://wikitech.wikimedia.org/wiki/Analytics/Systems/Anaconda#Anaconda_base_environment).
+Once a month all notebooks in the "notebooks" sub-directory are executed using [Anaconda base environment](https://wikitech.wikimedia.org/wiki/Analytics/Systems/Anaconda#Anaconda_base_environment) via [statistics::product_analytics](https://gerrit.wikimedia.org/r/plugins/gitiles/operations/puppet/+/refs/heads/production/modules/statistics/manifests/product_analytics.pp) Puppet module as part of [misc_jobs](https://gerrit.wikimedia.org/r/plugins/gitiles/operations/puppet/+/refs/heads/production/modules/profile/manifests/statistics/explorer/misc_jobs.pp) profile. These miscellaneous jobs are executed on stat1007 -- found in [explorer.yaml](https://gerrit.wikimedia.org/r/plugins/gitiles/operations/puppet/+/refs/heads/production/hieradata/role/common/statistics/explorer.yaml) under `misc_jobs::hosts_with_jobs`.
+
+The team is alerted by email if there are any of the notebooks fails execution (refer to [T295381](https://phabricator.wikimedia.org/T295381) for more information). The errors are logged in /srv/product_analytics/logs/product-analytics-movement-metrics/monthly_movement_metrics.log on stat1007.
 
 To add a new notebook-based ETL job, add the .ipynb file to the "notebooks" sub-directory and ensure that any calls to [wmfdata](https://github.com/wikimedia/wmfdata-python)'s `load_csv()` use the "wmf_product" database (via the `db_name` parameter). No changes to main.sh are required.
 

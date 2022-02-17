@@ -1,10 +1,14 @@
+# 2022-02-17
+
+- Removed the notebook used for troubleshooting error logging and alerts (added 2021-11-18) [T295733](https://phabricator.wikimedia.org/T295733)
+
 # 2021-11-10
 
-- Fixed an issue with script being "successful" even when any/all notebooks fail to execute (T295513)
+- Fixed an issue with script being "successful" even when any/all notebooks fail to execute [T295513](https://phabricator.wikimedia.org/T295513)
 
 # 2021-11-01
 
-- Migrated reading metrics (`pageviews_corrected` and `global_markets_pageviews` tables; T291956)
+- Migrated reading metrics (`pageviews_corrected` and `global_markets_pageviews` tables) [T291956](https://phabricator.wikimedia.org/T291956)
 
 # 2021-10-01
 
@@ -13,4 +17,4 @@
 
 # 2021-09-29
 
-- Initial draft of script and notebook for testing (T291957)
+- Initial draft of script and notebook for testing [T291957](https://phabricator.wikimedia.org/T291957)
