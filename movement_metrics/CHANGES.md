@@ -1,3 +1,8 @@
+# 2022-02-25
+
+- Migrated editing metrics [T295332](https://phabricator.wikimedia.org/T295332)
+- Cleaned up previously added notebooks and queries
+
 # 2022-02-17
 
 - Removed the notebook used for troubleshooting error logging and alerts (added 2021-11-18) [T295733](https://phabricator.wikimedia.org/T295733)
