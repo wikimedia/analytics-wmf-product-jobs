@@ -1,3 +1,7 @@
+# 2022-05-25
+
+- Migrated content interactions metrics [T308695](https://phabricator.wikimedia.org/T308695)
+
 # 2022-02-25
 
 - Migrated editing metrics [T295332](https://phabricator.wikimedia.org/T295332)
