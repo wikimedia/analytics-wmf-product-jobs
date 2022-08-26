@@ -10,7 +10,7 @@ WITH global_market_editors AS (
     AND economic_region IN ("Global South" , "Global North")
     AND NOT user_is_anonymous
     AND gd.action_type = 0
-  GROUP BY economic_region, user_fingerprint_or_id
+  GROUP BY economic_region, user_fingerprint_or_name
 )
 
 INSERT INTO wmf_product.active_editors

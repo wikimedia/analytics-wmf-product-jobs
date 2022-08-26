@@ -1,3 +1,7 @@
+# 2022-08-26
+
+- Update global market active editors query [T316398](https://phabricator.wikimedia.org/T316398)
+
 # 2022-05-25
 
 - Migrated content interactions metrics [T308695](https://phabricator.wikimedia.org/T308695)
