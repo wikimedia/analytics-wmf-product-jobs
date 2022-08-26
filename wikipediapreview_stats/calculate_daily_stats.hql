@@ -41,7 +41,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS ${archive_table} (
     `year`           int     COMMENT 'Unpadded year of request',
     `month`          int     COMMENT 'Unpadded month of request',
     `day`            int     COMMENT 'Unpadded day of request',
-    `access_method`  string  COMMENT 'Method used to accessing the site (mobile web|desktop)',
+    `device_type`    string  COMMENT 'Type of device used by the client: touch or non-touch',
     `referer_host`   string  COMMENT 'Host from referer parsing',
     `continent`      string  COMMENT 'Continent of the accessing agents (maxmind GeoIP database)',
     `country_code`   string  COMMENT 'Country iso code of the accessing agents (maxmind GeoIP database)',
@@ -63,7 +63,7 @@ CREATE EXTERNAL TABLE tmp_wikipediapreview_stats_${year}_${month}_${day} (
     `year`           int     COMMENT 'Unpadded year of request',
     `month`          int     COMMENT 'Unpadded month of request',
     `day`            int     COMMENT 'Unpadded day of request',
-    `access_method`  string  COMMENT 'Method used to accessing the site (mobile web|desktop)',
+    `device_type`    string  COMMENT 'Type of device used by the client: touch or non-touch',
     `referer_host`   string  COMMENT 'Host from referer parsing',
     `continent`      string  COMMENT 'Continent of the accessing agents (maxmind GeoIP database)',
     `country_code`   string  COMMENT 'Country iso code of the accessing agents (maxmind GeoIP database)',
@@ -86,9 +86,9 @@ WITH wikipediapreview_stats_${year}_${month}_${day} AS
         day,
         IF(
             x_analytics_map["wprov"] = 'wppw1t',
-            'mobile web',
-            access_method
-        ) AS access_method,
+            'touch',
+            'non-touch'
+        ) AS device_type,
         parse_url(referer, 'HOST') AS referer_host,
         geocoded_data['continent'] AS continent,
         geocoded_data['country_code'] AS country_code,
@@ -106,8 +106,8 @@ WITH wikipediapreview_stats_${year}_${month}_${day} AS
         day,
         IF(
             x_analytics_map["wprov"] = 'wppw1t',
-            'mobile web',
-            access_method
+            'touch',
+            'non-touch'
         ),
         parse_url(referer, 'HOST'),
         geocoded_data['continent'],
