@@ -45,7 +45,8 @@ CREATE EXTERNAL TABLE IF NOT EXISTS ${archive_table} (
     `referer_host`   string  COMMENT 'Host from referer parsing',
     `continent`      string  COMMENT 'Continent of the accessing agents (maxmind GeoIP database)',
     `country_code`   string  COMMENT 'Country iso code of the accessing agents (maxmind GeoIP database)',
-    `country`        string  COMMENT 'Country (text) of the accessing agents (maxmind GeoIP database)'
+    `country`        string  COMMENT 'Country (text) of the accessing agents (maxmind GeoIP database)',
+    `instrumentation_version` int COMMENT 'Version number incremented along with major instrumentation changes'
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
@@ -67,7 +68,8 @@ CREATE EXTERNAL TABLE tmp_wikipediapreview_stats_${year}_${month}_${day} (
     `referer_host`   string  COMMENT 'Host from referer parsing',
     `continent`      string  COMMENT 'Continent of the accessing agents (maxmind GeoIP database)',
     `country_code`   string  COMMENT 'Country iso code of the accessing agents (maxmind GeoIP database)',
-    `country`        string  COMMENT 'Country (text) of the accessing agents (maxmind GeoIP database)'
+    `country`        string  COMMENT 'Country (text) of the accessing agents (maxmind GeoIP database)',
+    `instrumentation_version` int COMMENT 'Version number incremented along with major instrumentation changes'
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
@@ -85,17 +87,26 @@ WITH wikipediapreview_stats_${year}_${month}_${day} AS
         month,
         day,
         IF(
-            x_analytics_map["wprov"] = 'wppw1t',
+            REGEXP_EXTRACT(
+                x_analytics_map['wprov'],
+                '^wppw(\\d+)(t?)$',
+                2
+            ) = 't',
             'touch',
             'non-touch'
         ) AS device_type,
         parse_url(referer, 'HOST') AS referer_host,
         geocoded_data['continent'] AS continent,
         geocoded_data['country_code'] AS country_code,
-        geocoded_data['country'] AS country
+        geocoded_data['country'] AS country,
+        CAST(REGEXP_EXTRACT(
+            x_analytics_map['wprov'],
+            '^wppw(\\d+)(t?)$',
+            1
+        ) AS INT) AS instrumentation_version
     FROM ${source_table}
     WHERE
-        x_analytics_map["wprov"] IN ('wppw1', 'wppw1t')
+        x_analytics_map['wprov'] REGEXP '^wppw(\\d+)(t?)$'
         AND webrequest_source = 'text'
         AND year = ${year}
         AND month = ${month}
@@ -105,14 +116,23 @@ WITH wikipediapreview_stats_${year}_${month}_${day} AS
         month,
         day,
         IF(
-            x_analytics_map["wprov"] = 'wppw1t',
+            REGEXP_EXTRACT(
+                x_analytics_map['wprov'],
+                '^wppw(\\d+)(t?)$',
+                2
+            ) = 't',
             'touch',
             'non-touch'
         ),
         parse_url(referer, 'HOST'),
         geocoded_data['continent'],
         geocoded_data['country_code'],
-        geocoded_data['country']
+        geocoded_data['country'],
+        CAST(REGEXP_EXTRACT(
+            x_analytics_map['wprov'],
+            '^wppw(\\d+)(t?)$',
+            1
+        ) AS INT)
 )
 INSERT OVERWRITE TABLE tmp_wikipediapreview_stats_${year}_${month}_${day}
 SELECT *
