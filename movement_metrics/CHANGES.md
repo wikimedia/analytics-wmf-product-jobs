@@ -1,3 +1,7 @@
+# 2023-03-23
+
+- Migrated from analytics-wmf to conda-analytics [T332896](https://phabricator.wikimedia.org/T332896)
+
 # 2022-08-26
 
 - Update global market active editors query [T316398](https://phabricator.wikimedia.org/T316398)
