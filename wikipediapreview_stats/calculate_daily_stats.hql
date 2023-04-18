@@ -92,7 +92,12 @@ WITH wikipediapreview_stats_${year}_${month}_${day} AS
                 '^wppw(\\d+)(t?)$',
                 2
             ) = 't',
-            'touch',
+            IF(
+                -- "Mac OS X" touch devices are iPads
+                user_agent_map['os_family'] IN ('Android', 'iOS', 'Mac OS X'),
+                'touch',
+                'touchscreen computer'
+            ),
             'non-touch'
         ) AS device_type,
         parse_url(referer, 'HOST') AS referer_host,
@@ -107,6 +112,7 @@ WITH wikipediapreview_stats_${year}_${month}_${day} AS
     FROM ${source_table}
     WHERE
         x_analytics_map['wprov'] REGEXP '^wppw(\\d+)(t?)$'
+        AND agent_type = 'user'
         AND webrequest_source = 'text'
         AND year = ${year}
         AND month = ${month}
@@ -121,7 +127,11 @@ WITH wikipediapreview_stats_${year}_${month}_${day} AS
                 '^wppw(\\d+)(t?)$',
                 2
             ) = 't',
-            'touch',
+            IF(
+                user_agent_map['os_family'] IN ('Android', 'iOS', 'Mac OS X'),
+                'touch',
+                'touchscreen computer'
+            ),
             'non-touch'
         ),
         parse_url(referer, 'HOST'),
