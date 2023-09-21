@@ -18,6 +18,7 @@ WITH global_edits AS (
       "species",
       "wikibooks",
       "wikidata",
+      "wikifunctions",
       "wikinews",
       "wikipedia",
       "wikiquote",

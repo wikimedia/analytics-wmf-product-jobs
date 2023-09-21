@@ -24,6 +24,7 @@ INNER JOIN canonical_data.wikis ON wiki_db = database_code
     "species",
     "wikibooks",
     "wikidata",
+    "wikifunctions",
     "wikinews",
     "wikipedia",
     "wikiquote",
