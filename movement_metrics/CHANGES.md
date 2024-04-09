@@ -1,3 +1,7 @@
+# 2024-04-09
+
+- Removed code for global_markets_pageviews ([T359691](https://phabricator.wikimedia.org/T359691))
+
 # 2023-03-23
 
 - Migrated from analytics-wmf to conda-analytics [T332896](https://phabricator.wikimedia.org/T332896)
